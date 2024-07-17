@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+
+ARG VERSION=1.79.0
+
+FROM rust:${VERSION}-alpine as builder
+
+RUN apk add --no-cache \
+	bash \
+	curl \
+	file \
+    git \
+    build-base \
+    cmake \
+    openssl-dev \
+    linux-headers \
+    musl-dev
+
+WORKDIR /rustup
+# # https://rust-lang.github.io/rustup/dev-guide/
+RUN git clone https://github.com/rust-lang/rustup.git /rustup
+
+RUN apk add --no-cache \
+	openssl-libs-static
+
+RUN cargo build
+RUN mkdir -p /egress
+
+
+RUN RUSTUP_HOME=/egress CARGO_HOME=/egress target/debug/rustup-init --no-modify-path -y
